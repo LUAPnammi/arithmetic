@@ -1,0 +1,210 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0d0d0f}
+.wrap{background:#111114;min-height:400px;border-radius:12px;padding:2rem;font-family:var(--font-mono,monospace);color:#e2e8f0;border:0.5px solid #2a2a35}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem}
+.stat{text-align:center}
+.stat-label{font-size:11px;color:#6b7280;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.stat-val{font-size:28px;font-weight:500;color:#e2e8f0}
+.timer-val{color:#60a5fa}
+.score-val{color:#34d399}
+#timer-bar-wrap{height:4px;background:#1e1e2a;border-radius:2px;margin-bottom:2rem;overflow:hidden}
+#timer-bar{height:4px;background:#60a5fa;border-radius:2px;transition:width .1s linear,background .5s}
+.question-area{text-align:center;margin:1.5rem 0 2rem}
+#problem{font-size:48px;font-weight:500;letter-spacing:.02em;color:#f1f5f9;line-height:1}
+#answer-row{display:flex;justify-content:center;align-items:center;gap:12px;margin-top:1.5rem}
+#ans{background:#1a1a24;border:0.5px solid #3a3a50;color:#f1f5f9;font-size:28px;font-family:var(--font-mono,monospace);width:160px;padding:10px 16px;border-radius:8px;text-align:center;outline:none}
+#ans:focus{border-color:#60a5fa;box-shadow:0 0 0 2px #60a5fa33}
+#feedback{font-size:22px;min-width:32px;text-align:center}
+.btn{background:#1a1a24;border:0.5px solid #3a3a50;color:#e2e8f0;font-size:15px;padding:10px 24px;border-radius:8px;cursor:pointer;font-family:var(--font-mono,monospace);transition:background .15s,border-color .15s}
+.btn:hover{background:#23232f;border-color:#60a5fa}
+.btn:active{transform:scale(.98)}
+.btn-start{background:#1e3a5f;border-color:#2563eb;color:#93c5fd;font-size:16px;padding:12px 32px;margin-top:1rem}
+.btn-start:hover{background:#1e3a6a;border-color:#60a5fa}
+.screen{display:none}
+.screen.active{display:block}
+#start-screen{text-align:center;padding:1.5rem 0}
+#start-screen h2{font-size:18px;color:#94a3b8;margin-bottom:4px;font-weight:400}
+#start-screen h1{font-size:32px;color:#f1f5f9;font-weight:500;margin-bottom:1.5rem}
+.ops{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:1rem 0}
+.op-btn{background:#1a1a24;border:0.5px solid #3a3a50;color:#94a3b8;font-size:13px;padding:6px 16px;border-radius:20px;cursor:pointer;font-family:var(--font-mono,monospace);transition:all .15s}
+.op-btn.on{background:#1e3a5f;border-color:#2563eb;color:#93c5fd}
+.dur-row{display:flex;justify-content:center;gap:8px;margin:1rem 0}
+.dur-btn{background:#1a1a24;border:0.5px solid #3a3a50;color:#94a3b8;font-size:13px;padding:6px 14px;border-radius:6px;cursor:pointer;font-family:var(--font-mono,monospace);transition:all .15s}
+.dur-btn.on{background:#14352a;border-color:#059669;color:#6ee7b7}
+.settings-label{font-size:12px;color:#4b5563;margin:.75rem 0 .25rem;letter-spacing:.06em;text-transform:uppercase}
+#end-screen{text-align:center;padding:1rem 0}
+#end-screen h2{font-size:22px;color:#f1f5f9;margin-bottom:6px}
+#final-score{font-size:64px;font-weight:500;color:#34d399;line-height:1;margin:.5rem 0}
+#end-screen p{color:#6b7280;font-size:14px;margin-bottom:1.5rem}
+.streaks{display:flex;justify-content:center;gap:24px;margin:1rem 0}
+.streak-item{text-align:center}
+.streak-num{font-size:24px;font-weight:500;color:#60a5fa}
+.streak-lbl{font-size:11px;color:#4b5563;text-transform:uppercase;letter-spacing:.07em}
+</style>
+
+<div class="wrap">
+<h2 class="sr-only">Pilot arithmetic speed drill — solve math problems quickly before time runs out</h2>
+
+<div id="start-screen" class="screen active">
+  <h2>speed drill</h2>
+  <h1>Pilot Arithmetic</h1>
+  <div class="settings-label">Operations</div>
+  <div class="ops">
+    <div class="op-btn on" data-op="add">+ Addition</div>
+    <div class="op-btn on" data-op="sub">− Subtraction</div>
+    <div class="op-btn on" data-op="mul">× Multiplication</div>
+    <div class="op-btn on" data-op="div">÷ Division</div>
+  </div>
+  <div class="settings-label">Duration</div>
+  <div class="dur-row">
+    <div class="dur-btn" data-dur="30">30s</div>
+    <div class="dur-btn on" data-dur="60">60s</div>
+    <div class="dur-btn" data-dur="120">2 min</div>
+    <div class="dur-btn" data-dur="300">5 min</div>
+  </div>
+  <br>
+  <button class="btn btn-start" id="start-btn">Start drill</button>
+</div>
+
+<div id="game-screen" class="screen">
+  <div class="header">
+    <div class="stat"><div class="stat-label">Time</div><div class="stat-val timer-val" id="time-disp">60</div></div>
+    <div class="stat"><div class="stat-label">Score</div><div class="stat-val score-val" id="score-disp">0</div></div>
+    <div class="stat"><div class="stat-label">Streak</div><div class="stat-val" id="streak-disp" style="color:#f59e0b">0</div></div>
+  </div>
+  <div id="timer-bar-wrap"><div id="timer-bar"></div></div>
+  <div class="question-area">
+    <div id="problem">3 + 4 = ?</div>
+    <div id="answer-row">
+      <input id="ans" type="number" inputmode="numeric" autocomplete="off" placeholder="?" autofocus />
+      <div id="feedback"></div>
+    </div>
+  </div>
+</div>
+
+<div id="end-screen" class="screen">
+  <div id="final-score">0</div>
+  <h2>problems solved</h2>
+  <p id="end-sub"></p>
+  <div class="streaks">
+    <div class="streak-item"><div class="streak-num" id="end-correct">0</div><div class="streak-lbl">correct</div></div>
+    <div class="streak-item"><div class="streak-num" id="end-wrong" style="color:#f87171">0</div><div class="streak-lbl">wrong</div></div>
+    <div class="streak-item"><div class="streak-num" id="end-streak" style="color:#f59e0b">0</div><div class="streak-lbl">best streak</div></div>
+  </div>
+  <br>
+  <button class="btn btn-start" id="restart-btn">Try again</button>
+</div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let ops = {add:true,sub:true,mul:true,div:true};
+let duration = 60;
+let score=0,wrong=0,streak=0,bestStreak=0,timeLeft=0,timer=null,answer=0;
+
+document.querySelectorAll('.op-btn').forEach(b=>b.addEventListener('click',()=>{
+  const op=b.dataset.op;
+  ops[op]=!ops[op];
+  const anyOn=Object.values(ops).some(v=>v);
+  if(!anyOn){ops[op]=true;return}
+  b.classList.toggle('on',ops[op]);
+}));
+document.querySelectorAll('.dur-btn').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.dur-btn').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+  duration=+b.dataset.dur;
+}));
+
+function randInt(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+function newProblem(){
+  const pool=Object.keys(ops).filter(k=>ops[k]);
+  const op=pool[randInt(0,pool.length-1)];
+  let a,b,q;
+  if(op==='add'){a=randInt(2,100);b=randInt(2,100);answer=a+b;q=`${a} + ${b} = ?`}
+  else if(op==='sub'){a=randInt(2,100);b=randInt(2,a);answer=a-b;q=`${a} − ${b} = ?`}
+  else if(op==='mul'){a=randInt(2,12);b=randInt(2,12);answer=a*b;q=`${a} × ${b} = ?`}
+  else{a=randInt(2,12);b=randInt(2,12);const prod=a*b;answer=b;q=`${prod} ÷ ${a} = ?`}
+  $('problem').textContent=q;
+  $('ans').value='';
+  $('feedback').textContent='';
+}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  $(id).classList.add('active');
+}
+
+function startGame(){
+  score=0;wrong=0;streak=0;bestStreak=0;timeLeft=duration;
+  $('score-disp').textContent='0';
+  $('streak-disp').textContent='0';
+  const bar=$('timer-bar');
+  bar.style.background='#60a5fa';
+  showScreen('game-screen');
+  newProblem();
+  $('ans').focus();
+  bar.style.width='100%';
+  clearInterval(timer);
+  timer=setInterval(()=>{
+    timeLeft--;
+    $('time-disp').textContent=timeLeft;
+    const pct=(timeLeft/duration)*100;
+    bar.style.width=pct+'%';
+    if(pct<25)bar.style.background='#f87171';
+    else if(pct<50)bar.style.background='#f59e0b';
+    if(timeLeft<=0){clearInterval(timer);endGame();}
+  },1000);
+}
+
+function endGame(){
+  showScreen('end-screen');
+  $('final-score').textContent=score;
+  $('end-correct').textContent=score;
+  $('end-wrong').textContent=wrong;
+  $('end-streak').textContent=bestStreak;
+  const ppm=duration>0?Math.round(score/(duration/60)):0;
+  $('end-sub').textContent=`${ppm} correct per minute · ${duration}s drill`;
+}
+
+$('ans').addEventListener('input',()=>{
+  const val=parseInt($('ans').value,10);
+  if(isNaN(val))return;
+  if(val===answer){
+    score++;streak++;
+    if(streak>bestStreak)bestStreak=streak;
+    $('score-disp').textContent=score;
+    $('streak-disp').textContent=streak;
+    $('feedback').textContent='✓';
+    $('feedback').style.color='#34d399';
+    newProblem();
+  } else if($('ans').value.length>= String(answer).length){
+    wrong++;streak=0;
+    $('streak-disp').textContent='0';
+    $('feedback').textContent='✗';
+    $('feedback').style.color='#f87171';
+    setTimeout(()=>{$('ans').value='';$('feedback').textContent='';},400);
+  }
+});
+
+$('ans').addEventListener('keydown',e=>{if(e.key==='Enter'){
+  const val=parseInt($('ans').value,10);
+  if(val===answer){
+    score++;streak++;
+    if(streak>bestStreak)bestStreak=streak;
+    $('score-disp').textContent=score;
+    $('streak-disp').textContent=streak;
+    newProblem();
+  } else {
+    wrong++;streak=0;
+    $('streak-disp').textContent='0';
+    $('feedback').textContent='✗';
+    $('feedback').style.color='#f87171';
+    setTimeout(()=>{$('ans').value='';$('feedback').textContent='';},400);
+  }
+}});
+
+$('start-btn').addEventListener('click',startGame);
+$('restart-btn').addEventListener('click',()=>showScreen('start-screen'));
+</script>
